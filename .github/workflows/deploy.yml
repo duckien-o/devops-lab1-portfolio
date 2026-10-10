@@ -1,0 +1,42 @@
+# DevOps Lab 1 - CI/CD Pipeline with GitHub Actions
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    # Allow GitHub Actions to push files to gh-pages
+    permissions:
+      contents: write
+
+    steps:
+      # Step 1: Download source code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Check whether index.html exists
+      - name: Validate HTML
+        run: |
+          echo "Checking index.html exists..."
+          if [ -f "index.html" ]; then
+            echo "index.html found!"
+            echo "File size: $(wc -c < index.html) bytes"
+          else
+            echo "index.html NOT found!"
+            exit 1
+          fi
+
+      # Step 3: Deploy website to gh-pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          commit_message: "Auto-deploy from CI pipeline"
